@@ -55,13 +55,17 @@ def get_user(username: str) -> sqlite3.Row:
 
 def create_user(username: str) -> sqlite3.Row:
     conn = _get_connection()
-    
-    with conn:
-        conn.execute(
-            "INSERT INTO users (username) VALUES (?)", (username,)
-        )
 
-    return get_user(username) 
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO users (username) VALUES (?)",
+                (username,)
+            )
+    except sqlite3.IntegrityError:
+        pass
+
+    return get_user(username)
 
 
 def get_or_create_user(username: str) -> sqlite3.Row:
