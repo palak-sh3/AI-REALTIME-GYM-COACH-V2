@@ -2,7 +2,12 @@ import sqlite3
 import streamlit as st
 from pathlib import Path
 
-_DB_PATH = str(Path(__file__).parent.parent.parent / "data.db")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+DB_DIR = BASE_DIR / "database"
+
+DB_DIR.mkdir(exist_ok=True)
+
+_DB_PATH = str(DB_DIR / "data.db")
 
 
 @st.cache_resource
