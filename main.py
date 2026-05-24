@@ -1,10 +1,11 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import time
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from groq import Groq
-from streamlit_webrtc import webrtc_streamer, WebRtcMode
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
 
 from services.auth.login_wall import render_login_wall
 from services.state.session_defaults import initial_session_defaults
@@ -209,23 +210,31 @@ def main():
             unsafe_allow_html=True,
         )
     else:
+
+        from streamlit_webrtc import RTCConfiguration
+
+        RTC_CONFIGURATION = RTCConfiguration(
+            {
+                "iceServers": [
+                    {"urls": ["stun:stun.l.google.com:19302"]}
+                ]
+            }
+        )
+
         context = webrtc_streamer(
             key="exercise-analysis",
             mode=WebRtcMode.SENDRECV,
-            video_processor_factory=VideoProcessorClass,
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            rtc_configuration=RTC_CONFIGURATION,
             media_stream_constraints={
                 "video": True,
                 "audio": False
             },
-            async_processing=True
+            video_processor_factory=VideoProcessorClass,
+            async_processing=True,
         )
 
-        sync_metrics_update(context)
-
         if context and context.state.playing:
-            time.sleep(2.5)
-            st.rerun()
+            sync_metrics_update(context)
 
         inject_webrtc_styles()
 
